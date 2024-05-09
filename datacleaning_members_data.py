@@ -1,11 +1,22 @@
 import pandas as pd
+dtype_spec = {70: 'object'}
+members_data = pd.read_csv(
+    'members_data.csv',
+    dtype=dtype_spec,
+    parse_dates=['bcdate'],
+    date_parser=lambda x: pd.to_datetime(x, format='%d/%m/%Y', errors='coerce'),
+    low_memory=False
+)
 
-data = pd.read_csv('expeditions_data.csv')
-print(data.head())
-print(data.info()) #this is an important step for me to
-#chek that each column hs the correct data type
-print(data.describe())
+members_data['expid'] = members_data['expid'].astype('category')
+members_data['peakid'] = members_data['peakid'].astype('category')
+members_data['membid'] = pd.to_numeric(members_data['membid'], errors='coerce')
+members_data['membid'].fillna(method='ffill', inplace=True)
+members_data.dropna(subset=['expid', 'peakid', 'bcdate'], inplace=True)
 
-#above I am just loading the data with pandas and performing
-#intial inspections to make sure everything is in order
 
+print(members_data.info())
+print(members_data.dtypes)
+print(members_data.head())
+
+members_data.to_csv('cleaned_members_data.csv', index=False)
